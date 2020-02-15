@@ -2,7 +2,7 @@ function Remove-VCDSInstance(){
     <#
     .SYNOPSIS
     Deletes an instance of Cloud Director Service under the currently connected VMware Console Services Portal account.
-    
+
     .DESCRIPTION
     Deletes an instance of Cloud Director Service under the currently connected VMware Console Services Portal account.
 
@@ -13,23 +13,23 @@ function Remove-VCDSInstance(){
     All UI and API access to this instance will be lost.
 
     This action cannot be undone.
-    
+
     .PARAMETER EnvironmentId
-    The Cloud Director Environment Id hosting the instance to remove
-    
+    Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
+
     .PARAMETER Name
     The Name of the CDS Instance to remove
-    
+
     .PARAMETER Id
     The Id of the CDS Instance to remove
-    
+
     .PARAMETER Force
     If $true the instance will be removed without prompting.
-    
+
     .EXAMPLE
     Remove-VCDSInstance -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -Name "CDS-Example-01"
     Removes the CDS instance with the Name "CDS-Example-01" from the CDS Environment with the Id urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac
-    
+
 	.NOTES
     AUTHOR: Adrian Begg
     LASTEDIT: 2020-02-14
@@ -38,36 +38,43 @@ function Remove-VCDSInstance(){
     [CmdletBinding(DefaultParameterSetName="ById")]
     Param(
         [Parameter(Mandatory=$True, ParameterSetName="ByName")]
-        [Parameter(Mandatory=$True, ParameterSetName="ById")]
-            [ValidateNotNullorEmpty()] [String] $EnvironmentId,
-        [Parameter(Mandatory=$True, ParameterSetName="ByName")]
             [ValidateNotNullorEmpty()] [String] $Name,
         [Parameter(Mandatory=$True, ParameterSetName="ById")]
             [ValidateNotNullorEmpty()] [String] $Id,
         [Parameter(Mandatory=$False, ParameterSetName="ByName")]
         [Parameter(Mandatory=$False, ParameterSetName="ById")]
-            [bool]$Force = $false
+            [bool]$Force = $false,
+        [Parameter(Mandatory=$False, ParameterSetName="ByName")]
+        [Parameter(Mandatory=$False, ParameterSetName="ById")]
+            [ValidateNotNullorEmpty()] [String] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
-    # Next check if the EnvironmentId is valid
-    $Environment = Get-VCDSEnvironments -Id $EnvironmentId
-    if($Environment.count -eq 0){
-        throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+    # Next check if the EnvironmentId has been provided and is valid
+    if($PSBoundParameters.ContainsKey("EnvironmentId")){
+        $Environment = $global:VCDService.VCDSEnvironments | Where-Object {$_.id -eq $EnvironmentId}
+        if($Environment.count -eq 0){
+            throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+        }
+    } else {
+        $Environment = $global:VCDService.DefaultEnvironment
     }
+    # Setup a Service URI for the environment
+    $ServiceURI = $Environment.ServiceURI
+
     if($PSCmdlet.ParameterSetName -eq "ByName") {
         # Check if an instance already exists with the provided Name
-        $Instance = Get-VCDSInstance -EnvironmentId $EnvironmentId -Name $Name
+        $Instance = Get-VCDSInstance -EnvironmentId $Environment.Id -Name $Name
         if($Instance.count -eq 0){
-            throw "An instance with the Name $Name can not be found in the environment with the Id $EnvironmentId please check the Name and try again."
+            throw "An instance with the Name $Name can not be found in the environment with the Id $($Environment.Id) please check the Name and try again."
         }
     }
     if($PSCmdlet.ParameterSetName -eq "ById") {
         # Check if an instance already exists with the provided Id
-        $Instance = Get-VCDSInstance -EnvironmentId $EnvironmentId -Id $Id
+        $Instance = Get-VCDSInstance -EnvironmentId $Environment.Id -Id $Id
         if($Instance.count -eq 0){
-            throw "An instance with the Id $Id can not be found in the environment with the Id $EnvironmentId please check the Name and try again."
+            throw "An instance with the Id $Id can not be found in the environment with the Id $($Environment.Id) please check the Name and try again."
         }
     }
     # Warn the users that this is dangerous
@@ -78,7 +85,7 @@ function Remove-VCDSInstance(){
     # Setup a Service URI...need to review this after some further testing
     $ServiceURI = ($global:VCDService.CDSEnvironments | Where-Object{$_.type -eq "PRODUCTION"}).starfleetConfig.operatorURL
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceAPIEndpoint = "$ServiceURI/environment/$EnvironmentId/instances/$($Instance.id)"
+    $InstanceAPIEndpoint = "$ServiceURI/environment/($Environment.Id)/instances/$($Instance.id)"
 
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{

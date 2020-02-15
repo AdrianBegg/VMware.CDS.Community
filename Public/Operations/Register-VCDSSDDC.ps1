@@ -7,7 +7,7 @@ function Register-VCDSSDDC(){
     Associate an VMC SDDC with a VMware Cloud Director service instance.
 
     .PARAMETER EnvironmentId
-    The environment Id for the VMware Cloud Director service
+    Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
 
     .PARAMETER InstanceId
     The VMware Cloud Director service instance id
@@ -32,12 +32,9 @@ function Register-VCDSSDDC(){
     AUTHOR: Adrian Begg
     LASTEDIT: 2020-02-14
 	VERSION: 1.0
-    #> 
+    #>
     [CmdletBinding(DefaultParameterSetName="ById")]
     Param(
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
-            [ValidateNotNullorEmpty()] [String] $EnvironmentId,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
             [ValidateNotNullorEmpty()]  [string] $InstanceId,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
@@ -46,34 +43,43 @@ function Register-VCDSSDDC(){
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $VMCOrganisationUUID,
             [ValidateNotNullorEmpty()]  [string] $VMCAPIToken,
-            [ValidateNotNullorEmpty()]  [string] $SDDCName
+            [ValidateNotNullorEmpty()]  [string] $SDDCName,
+        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceId")]
+        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceName")]
+            [ValidateNotNullorEmpty()] [String] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
-    # Next check if the EnvironmentId is valid
-    $Environment = Get-VCDSEnvironments -Id $EnvironmentId
-    if($Environment.count -eq 0){
-        throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+    # Next check if the EnvironmentId has been provided and is valid
+    if($PSBoundParameters.ContainsKey("EnvironmentId")){
+        $Environment = $global:VCDService.VCDSEnvironments | Where-Object {$_.id -eq $EnvironmentId}
+        if($Environment.count -eq 0){
+            throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+        }
+    } else {
+        $Environment = $global:VCDService.DefaultEnvironment
     }
+    # Setup a Service URI for the environment
+    $ServiceURI = $Environment.ServiceURI
+
     if($PSCmdlet.ParameterSetName -eq "ByName") {
         # Check if an instance already exists with the provided Name
-        $Instance = Get-VCDSInstance -EnvironmentId $EnvironmentId -Name $Name
+        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Name $Name
         if($Instance.count -eq 0){
-            throw "An instance with the Name $Name can not be found in the environment with the Id $EnvironmentId please check the Name and try again."
+            throw "An instance with the Name $Name can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
     }
     if($PSCmdlet.ParameterSetName -eq "ById") {
         # Check if an instance already exists with the provided Id
-        $Instance = Get-VCDSInstance -EnvironmentId $EnvironmentId -Id $Id
+        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Id $Id
         if($Instance.count -eq 0){
-            throw "An instance with the Id $Id can not be found in the environment with the Id $EnvironmentId please check the Name and try again."
+            throw "An instance with the Id $Id can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
     }
-    # Setup a Service URI...need to review this after some further testing
-    $ServiceURI = ($global:VCDService.CDSEnvironments | Where-Object{$_.type -eq "PRODUCTION"}).starfleetConfig.operatorURL
+
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$EnvironmentId/instances/$($Instance.id)/operations/invoke"
+    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invoke"
     [Hashtable] $htPayload = @{
         operationType = "associateVmc"
         arguments = @{

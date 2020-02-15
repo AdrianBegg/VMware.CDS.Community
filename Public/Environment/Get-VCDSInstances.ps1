@@ -7,11 +7,11 @@ function Get-VCDSInstances(){
     Returns the Cloud Director Service instances currently running under the currently connected VMware Console Services Portal account.
 
     .PARAMETER EnvironmentId
-    The Cloud Director Service Environment Id
-    
+    Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
+
     .PARAMETER Name
     Optionally the Name of the Instance.
-    
+
     .PARAMETER Id
     Optionally the Id to Instance.
 
@@ -23,30 +23,33 @@ function Get-VCDSInstances(){
     AUTHOR: Adrian Begg
     LASTEDIT: 2020-02-14
 	VERSION: 1.0
-    #> 
+    #>
     [CmdletBinding(DefaultParameterSetName="Default")]
     Param(
-        [Parameter(Mandatory=$True)]
-            [ValidateNotNullorEmpty()]  [string] $EnvironmentId,
+        [Parameter(Mandatory=$True, ParameterSetName="ById")]
+            [ValidateNotNullorEmpty()]  [string] $Id,
         [Parameter(Mandatory=$True, ParameterSetName="ByName")]
             [ValidateNotNullorEmpty()]  [string] $Name,
-        [Parameter(Mandatory=$True, ParameterSetName="ById")]
-            [ValidateNotNullorEmpty()]  [string] $Id
+        [Parameter(Mandatory=$False)]
+            [ValidateNotNullorEmpty()]  [string] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
-    # Next check if the EnvironmentId is valid
-    $Environment = Get-VCDSEnvironments -Id $EnvironmentId
-    if($Environment.count -eq 0){
-        throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+    # Next check if the EnvironmentId has been provided and is valid
+    if($PSBoundParameters.ContainsKey("EnvironmentId")){
+        $Environment = $global:VCDService.VCDSEnvironments | Where-Object {$_.id -eq $EnvironmentId}
+        if($Environment.count -eq 0){
+            throw "An VCDS Environment with the Id $EnvironmentId can not be found. Please check the Id and try again."
+        }
+    } else {
+        $Environment = $global:VCDService.DefaultEnvironment
     }
+    # Setup a Service URI for the environment
+    $ServiceURI = $Environment.ServiceURI
 
-    # Setup a Service URI...need to review this after some further testing
-    $ServiceURI = ($global:VCDService.CDSEnvironments | Where-Object{$_.type -eq "PRODUCTION"}).starfleetConfig.operatorURL
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstancesAPIEndpoint = "$ServiceURI/environment/$EnvironmentId/instances"
-
+    $InstancesAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances"
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
         URI = $InstancesAPIEndpoint
@@ -57,12 +60,12 @@ function Get-VCDSInstances(){
             "Accept" = "application/json"
         }
         UseBasicParsing = $true
-    }  
+    }
     try{
         # First return the environments collection from CSP
         $Instances = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         # Check if any filters have been provided
-        $Results = $Instances.values 
+        $Results = $Instances.values
         if($PSBoundParameters.ContainsKey("Name")){
             $Results = $Results | Where-Object {$_.name -eq $Name}
         }

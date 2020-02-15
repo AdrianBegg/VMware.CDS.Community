@@ -1,10 +1,10 @@
 function Get-VCDSEnvironments(){
     <#
     .SYNOPSIS
-    Returns the Cloud Director Service environments currently available under the currently connected VMware Console Services Portal account.
+    Returns the Cloud Director Service environments for the default CSP environment on the currently available under the currently connected VMware Console Services Portal account.
 
     .DESCRIPTION
-    Returns the Cloud Director Service environments currently available under the currently connected VMware Console Services Portal account.
+    Returns the Cloud Director Service environments for the default CSP environment on the currently available under the currently connected VMware Console Services Portal account.
 
     .PARAMETER Name
     The Name of the Environment to filter results by
@@ -16,7 +16,7 @@ function Get-VCDSEnvironments(){
     Optionally the Amazon Region to filter results by (e.g. us-west2)
 
     .EXAMPLE
-    Get-VCDSEnvironments 
+    Get-VCDSEnvironments
     Returns all of the environments available to the currently connected user.
 
     .EXAMPLE
@@ -46,10 +46,10 @@ function Get-VCDSEnvironments(){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
     # Setup a Service URI...need to review this after some further testing
-    $ServiceURI = ($global:VCDService.CDSEnvironments | Where-Object{$_.type -eq "PRODUCTION"}).starfleetConfig.operatorURL
+    $ServiceURI = $VCDService.DefaultEnvironment.ServiceURI
     # Setup a HashTable for the API call to the Cloud Gateway
     $EnvironmentAPIEndpoint = "$ServiceURI/environments"
-        
+
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
         URI = $EnvironmentAPIEndpoint
@@ -68,7 +68,7 @@ function Get-VCDSEnvironments(){
             Write-Warning "The account does not have access to any Cloud Director environments."
         } else {
             # Check if any filters have been provided
-            $Results = $Environments.values 
+            $Results = $Environments.values
             if($PSBoundParameters.ContainsKey("Name")){
                 $Results = $Results | Where-Object {$_.name -eq $Name}
             }
