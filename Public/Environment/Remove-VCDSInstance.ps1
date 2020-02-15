@@ -65,14 +65,14 @@ function Remove-VCDSInstance(){
 
     if($PSCmdlet.ParameterSetName -eq "ByName") {
         # Check if an instance already exists with the provided Name
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.Id -Name $Name
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.Id -Name $Name
         if($Instance.count -eq 0){
             throw "An instance with the Name $Name can not be found in the environment with the Id $($Environment.Id) please check the Name and try again."
         }
     }
     if($PSCmdlet.ParameterSetName -eq "ById") {
         # Check if an instance already exists with the provided Id
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.Id -Id $Id
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.Id -Id $Id
         if($Instance.count -eq 0){
             throw "An instance with the Id $Id can not be found in the environment with the Id $($Environment.Id) please check the Name and try again."
         }
@@ -82,10 +82,8 @@ function Remove-VCDSInstance(){
         Write-Warning "This cmdlet will delete the Cloud Director Instance with the Id $($Instance.id). All tasks in this instance will be terminated. All data and configuration settings in this instance will be lost. This action cannot be undone. Are you sure you wish to proceed?" -WarningAction Inquire
     }
 
-    # Setup a Service URI...need to review this after some further testing
-    $ServiceURI = ($global:VCDService.CDSEnvironments | Where-Object{$_.type -eq "PRODUCTION"}).starfleetConfig.operatorURL
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceAPIEndpoint = "$ServiceURI/environment/($Environment.Id)/instances/$($Instance.id)"
+    $InstanceAPIEndpoint = "$ServiceURI/environment/$($Environment.Id)/instances/$($Instance.id)"
 
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
