@@ -48,7 +48,7 @@ function Get-VCDSEnvironments(){
     # Setup a Service URI...need to review this after some further testing
     $ServiceURI = $VCDService.DefaultEnvironment.ServiceURI
     # Setup a HashTable for the API call to the Cloud Gateway
-    $EnvironmentAPIEndpoint = "$ServiceURI/environments"
+    $EnvironmentAPIEndpoint = "$ServiceURI/organizations/$($VCDService.OrganizationId)/environments"
 
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{

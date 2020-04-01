@@ -30,8 +30,8 @@ function Connect-VCDService(){
 
 	.NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-02-15
-	VERSION: 1.0
+    LASTEDIT: 2020-03-17
+	VERSION: 1.1
     #>
     [CmdletBinding(DefaultParameterSetName="Default")]
     Param (
@@ -81,12 +81,35 @@ function Connect-VCDService(){
     if($VCDCSPGatewayEnv.Count -eq 0){
             throw "The account does not have access to any Cloud Director environments. Please check the permissions and try again."
     }
+    # Retrieve infomration about the currently logged in user
+    $VCDCSPEnvRequestParameters.URI = "https://console.cloud.vmware.com/csp/gateway/am/api/loggedin/user"
+    $LoggedInUser = (Invoke-WebRequest @VCDCSPEnvRequestParameters).Content | ConvertFrom-Json
+    $objVCDCConnection | Add-Member Note* UserId $LoggedInUser.userId
+    $objVCDCConnection | Add-Member Note* Username $LoggedInUser.username
 
     # Next query each VCD Cloud Gateway environment for the VCDS Environments and build a collection
     $VCDSEnvironments = New-Object -TypeName "System.Collections.ArrayList"
     foreach($VCDSEnv in $VCDCSPGatewayEnv){
+        # Next retieve the information about the current logged in user and the Organisation that the token belongs to
+        $OrganisationURI = "$($VCDSEnv.starfleetConfig.operatorURL)/organization"
+        # A Hashtable of Request Parameters
+        [Hashtable] $VCDOrgRequestParameters = @{
+            URI = $OrganisationURI
+            Method = "Get"
+            ContentType = "application/json"
+            Headers = @{
+                "Authorization" = "Bearer $BearerToken"
+                "Accept" = "application/json"
+            }
+            UseBasicParsing = $true
+        }
+
+        # TO DO: Need to fix this segment up (multiple Orgs or not ???)
+        $OrganisationURI = (Invoke-WebRequest @VCDOrgRequestParameters).Content | ConvertFrom-Json
+        $objVCDCConnection | Add-Member Note* OrganizationId $OrganisationURI.id
+
         # Setup a Service URI for the API Call
-        $VCDSEnvAPIEndpoint = "$($VCDSEnv.starfleetConfig.operatorURL)/environments"
+        $VCDSEnvAPIEndpoint = "$($VCDSEnv.starfleetConfig.operatorURL)/organizations/$($OrganisationURI.id)/environments"
         # A Hashtable of Request Parameters
         [Hashtable] $VCDSEnvRequestParameters = @{
             URI = $VCDSEnvAPIEndpoint
