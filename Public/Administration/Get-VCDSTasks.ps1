@@ -21,6 +21,9 @@ function Get-VCDSTasks(){
     .PARAMETER UserId
     The UserId to filter the events.
 
+    .PARAMETER IncludeFiles
+    If true returns the details of any files assosicated with the Task (e.g. Support Bundles)
+
     .EXAMPLE
     Get-VCDSTasks
     Returtns the VCDS tasks for default environment.
@@ -32,7 +35,7 @@ function Get-VCDSTasks(){
 	.NOTES
     AUTHOR: Adrian Begg
     LASTEDIT: 2020-02-14
-	VERSION: 1.0
+	VERSION: 1.1
     #>
     Param(
         [Parameter(Mandatory=$False)]
@@ -41,7 +44,8 @@ function Get-VCDSTasks(){
             [ValidateSet("SUCCESS","IN_PROGRESS","FAILURE")] [String] $EventStatus,
             [ValidateNotNullorEmpty()] [String] $Organisation,
             [ValidateNotNullorEmpty()] [String] $UserId,
-            [ValidateNotNullorEmpty()] [String]  $EnvironmentId
+            [ValidateNotNullorEmpty()] [String]  $EnvironmentId,
+            [switch] $IncludeFiles
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
@@ -102,6 +106,32 @@ function Get-VCDSTasks(){
                 $RequestParameters.Body = $htFilters
                 $Response = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
                 $colTasks += $Response.values
+            }
+        }
+    }
+    # Next check if the -IncludeFiles flag was provided for the task
+    if ($PSBoundParameters.ContainsKey("IncludeFiles")) {
+        # Iterate through all tasks and add any files to the object
+        foreach($objTask in $colTasks){
+            # Construct the URI
+            $TaskFilesURI = "$TasksAPIEndpoint/${$objTask.id}files"
+            # A Hashtable of Request Parameters
+            [Hashtable] $FileRequestParameters = @{
+                URI = $TaskFilesURI
+                Method = "Get"
+                ContentType = "application/json"
+                Headers = @{
+                    "Authorization" = "Bearer $($global:VCDService.AccessToken)"
+                    "Accept" = "application/json"
+                }
+                UseBasicParsing = $true
+            }
+            # Now make an inital call to the API
+            $FilesResponse =  ((Invoke-WebRequest @FileRequestParameters).Content | ConvertFrom-Json)
+            # Check if anything was returned
+            if($FilesResponse.Count -gt 0){
+                # Add the files to the task object
+                $objTask | Add-Member Note* files $FilesResponse
             }
         }
     }
