@@ -65,14 +65,14 @@ function Register-VCDSSDDC(){
 
     if($PSCmdlet.ParameterSetName -eq "ByInstanceName") {
         # Check if an instance already exists with the provided Name
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Name $InstanceName
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Name $InstanceName
         if($Instance.count -eq 0){
             throw "An instance with the Name $InstanceName can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
     }
     if($PSCmdlet.ParameterSetName -eq "ByInstanceId") {
         # Check if an instance already exists with the provided Id
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Id $InstanceId
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Id $InstanceId
         if($Instance.count -eq 0){
             throw "An instance with the Id $InstanceId can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
