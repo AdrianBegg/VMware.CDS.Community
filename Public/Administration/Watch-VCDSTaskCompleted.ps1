@@ -57,7 +57,7 @@ function Watch-VCDSTaskCompleted(){
 		if($objTaskStatus.status -ne "IN_PROGRESS"){
             $boolTaskComplete = $true
             if($objTaskStatus.status -ne "SUCCESS"){
-                throw "An error occured execuitng Task Id $($Task.id). Errors: $($objTaskStatus.message)"
+                throw "An error occured executing Task Id $($Task.id). Errors: $($objTaskStatus.message)"
                 Break
             }
 		}
