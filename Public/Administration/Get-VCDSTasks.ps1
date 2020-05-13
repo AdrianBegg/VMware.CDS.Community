@@ -47,6 +47,7 @@ function Get-VCDSTasks(){
             [ValidateNotNullorEmpty()] [String]  $EnvironmentId,
             [switch] $IncludeFiles
     )
+    # TO DO : Implement filtering
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
@@ -98,6 +99,8 @@ function Get-VCDSTasks(){
     } else {
         # Add the inital tasks from the first API call to a collection
         $colTasks = $Response.values
+        Write-Host "Page Count:  $($Response.pageCount)"
+        Write-Host "Page in API Call: $($htFilters.page)"
         # Iterate over the results to retrieve all tasks
         if($Response.pageCount -ne 0){
             while ($Response.pageCount -gt $Response.page){
