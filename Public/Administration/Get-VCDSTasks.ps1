@@ -99,11 +99,12 @@ function Get-VCDSTasks(){
     } else {
         # Add the inital tasks from the first API call to a collection
         $colTasks = $Response.values
-        Write-Host "Page Count:  $($Response.pageCount)"
-        Write-Host "Page in API Call: $($htFilters.page)"
         # Iterate over the results to retrieve all tasks
         if($Response.pageCount -ne 0){
             while ($Response.pageCount -gt $Response.page){
+                Write-Host "Page Count:  $($Response.pageCount)"
+                Write-Host "Page in API Call: $($htFilters.page)"
+                Write-Host "Limit: $($htFilters.limit)"
                 # Increment to the next page and add the results
                 ($htFilters.page)++ | Out-Null
                 $RequestParameters.Body = $htFilters
