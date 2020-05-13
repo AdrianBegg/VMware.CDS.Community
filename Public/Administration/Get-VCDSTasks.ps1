@@ -64,7 +64,8 @@ function Get-VCDSTasks(){
 
     # A collection of filters
     [Hashtable] $htFilters = @{
-        sort = "asc"
+        sortBy = "queuedTime"
+        sortDir = "desc"
         page = 1
         limit = 100
     }
