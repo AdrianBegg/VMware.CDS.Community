@@ -30,10 +30,10 @@ function Register-VCDSSDDC(){
 
     .NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-02-14
-	VERSION: 1.0
+    LASTEDIT: 2020-04-02
+	VERSION: 1.1
     #>
-    [CmdletBinding(DefaultParameterSetName="ById")]
+    [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
     Param(
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
             [ValidateNotNullorEmpty()]  [string] $InstanceId,
@@ -63,18 +63,18 @@ function Register-VCDSSDDC(){
     # Setup a Service URI for the environment
     $ServiceURI = $Environment.ServiceURI
 
-    if($PSCmdlet.ParameterSetName -eq "ByName") {
+    if($PSCmdlet.ParameterSetName -eq "ByInstanceName") {
         # Check if an instance already exists with the provided Name
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Name $Name
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Name $InstanceName
         if($Instance.count -eq 0){
-            throw "An instance with the Name $Name can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
+            throw "An instance with the Name $InstanceName can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
     }
-    if($PSCmdlet.ParameterSetName -eq "ById") {
+    if($PSCmdlet.ParameterSetName -eq "ByInstanceId") {
         # Check if an instance already exists with the provided Id
-        $Instance = Get-VCDSInstance -EnvironmentId $Environment.id -Id $Id
+        $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Id $InstanceId
         if($Instance.count -eq 0){
-            throw "An instance with the Id $Id can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
+            throw "An instance with the Id $InstanceId can not be found in the environment with the Id $($Environment.id) please check the Name and try again."
         }
     }
 

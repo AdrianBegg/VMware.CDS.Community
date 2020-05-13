@@ -52,12 +52,16 @@ function Watch-VCDSTaskCompleted(){
         } else {
             [double] $Percentage = 0
         }
-        Write-Debug $objTaskStatus
+		Write-Debug $objTaskStatus
+		# Check if the Percentage is greater then 100 (this can happen) and normalise it
+		if($Percentage -gt 100){
+			$Percentage = 100
+		}
         Write-Progress -Activity "Task Id: $($Task.id)" -PercentComplete ($Percentage)
 		if($objTaskStatus.status -ne "IN_PROGRESS"){
             $boolTaskComplete = $true
             if($objTaskStatus.status -ne "SUCCESS"){
-                throw "An error occured execuitng Task Id $($Task.id). Errors: $($objTaskStatus.message)"
+                throw "An error occured executing Task Id $($Task.id). Errors: $($objTaskStatus.message)"
                 Break
             }
 		}
