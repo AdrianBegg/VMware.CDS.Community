@@ -47,7 +47,8 @@ function Get-VCDSTasks(){
             [ValidateNotNullorEmpty()] [String]  $EnvironmentId,
             [switch] $IncludeFiles
     )
-    # TO DO : Implement filtering
+    # TO DO : Implement filtering on the Task Properties
+    # TO DO : Pending security fix from VMware (currently can see all tasks), adjust the URI to use the Organisation Id instead of just environment Id
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
@@ -102,9 +103,6 @@ function Get-VCDSTasks(){
         # Iterate over the results to retrieve all tasks
         if($Response.pageCount -ne 0){
             while ($Response.pageCount -gt $Response.page){
-                Write-Host "Page Count:  $($Response.pageCount)"
-                Write-Host "Page in API Call: $($htFilters.page)"
-                Write-Host "Limit: $($htFilters.limit)"
                 # Increment to the next page and add the results
                 ($htFilters.page)++ | Out-Null
                 $RequestParameters.Body = $htFilters
