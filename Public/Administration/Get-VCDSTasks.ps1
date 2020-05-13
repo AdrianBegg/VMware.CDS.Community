@@ -64,7 +64,6 @@ function Get-VCDSTasks(){
         page = 1
         limit = 100
     }
-    Write-Warning "The API does not currently support multiple page traversal. This cmdlet has parital functionality and may run in an infinite loop forever."
 
     # Setup a HashTable for the API call to the Cloud Gateway
     $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/tasks"
