@@ -47,6 +47,8 @@ function Get-VCDSTasks(){
             [ValidateNotNullorEmpty()] [String]  $EnvironmentId,
             [switch] $IncludeFiles
     )
+    # TO DO : Implement filtering on the Task Properties
+    # TO DO : Pending security fix from VMware (currently can see all tasks), adjust the URI to use the Organisation Id instead of just environment Id
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
@@ -64,11 +66,11 @@ function Get-VCDSTasks(){
 
     # A collection of filters
     [Hashtable] $htFilters = @{
-        sort = "asc"
+        sortBy = "queuedTime"
+        sortDir = "desc"
         page = 1
         limit = 100
     }
-    Write-Warning "The API does not currently support multiple page traversal. This cmdlet has parital functionality and may run in an infinite loop forever."
 
     # Setup a HashTable for the API call to the Cloud Gateway
     $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/organization/$($VCDService.OrganizationId)/tasks"
