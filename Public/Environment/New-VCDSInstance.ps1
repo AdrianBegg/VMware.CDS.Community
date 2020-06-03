@@ -81,7 +81,7 @@ function New-VCDSInstance(){
     }
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $TemplateAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/organization/$($VCDService.OrganizationId)/instances"
+    $TemplateAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances"
     [Hashtable] $htPayload = @{
         name = $Name
         domain = $Domain

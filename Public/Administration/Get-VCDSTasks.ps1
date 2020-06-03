@@ -77,7 +77,7 @@ function Get-VCDSTasks(){
 
     # Setup the URI for a single Task
     if($PSBoundParameters.ContainsKey("Id")){
-        $TasksAPIEndpoint = "$TasksAPIEndpoint/$Id"
+        $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/tasks/$Id"
     }
 
     # A Hashtable of Request Parameters

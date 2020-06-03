@@ -83,7 +83,7 @@ function Remove-VCDSInstance(){
     }
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceAPIEndpoint = "$ServiceURI/environment/$($Environment.Id)/organization/$($VCDService.OrganizationId)/instances/$($Instance.id)"
+    $InstanceAPIEndpoint = "$ServiceURI/environment/$($Environment.Id)/instances/$($Instance.id)"
 
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
