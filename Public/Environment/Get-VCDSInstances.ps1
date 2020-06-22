@@ -49,7 +49,7 @@ function Get-VCDSInstances(){
     $ServiceURI = $Environment.ServiceURI
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstancesAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances"
+    $InstancesAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/organization/$($VCDService.OrganizationId)/instances"
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
         URI = $InstancesAPIEndpoint

@@ -73,11 +73,11 @@ function Get-VCDSTasks(){
     }
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/tasks"
+    $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/organization/$($VCDService.OrganizationId)/tasks"
 
     # Setup the URI for a single Task
     if($PSBoundParameters.ContainsKey("Id")){
-        $TasksAPIEndpoint = "$TasksAPIEndpoint/$Id"
+        $TasksAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/tasks/$Id"
     }
 
     # A Hashtable of Request Parameters
