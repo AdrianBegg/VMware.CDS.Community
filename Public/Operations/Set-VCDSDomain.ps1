@@ -1,9 +1,11 @@
 function Set-VCDSDomain(){
     <#
     .SYNOPSIS
-    Short description
+    Configures a Custom DNS name and X.509 SSL certificates for a Cloud Director service instance and Console Proxy endpoints.
 
     .DESCRIPTION
+    Configures a Custom DNS name and X.509 SSL certificates for a Cloud Director service instance and Console Proxy endpoints.
+
     Please Note: The Instance FQDN and Console Proxy FQDN must be resolvable by public DNS before this cmdlet can be run successfully.
 
     .PARAMETER InstanceId
@@ -28,35 +30,48 @@ function Set-VCDSDomain(){
     Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
 
     .PARAMETER Reset
-    Parameter description
+    If this switch is provided the custom DNS and certificates are cleared and the defaults created at instance creation are restored.
 
     .PARAMETER Async
-    Parameter description
+    If this switch is provided execution will occur asynchronously
 
     .EXAMPLE
-    An example
+    Set-VCDSDomain -InstanceName "CloudDirector-TestInstance-01" -Reset
+    Resets the certificate and DNS configuration for the instance named "CloudDirector-TestInstance-01" to the default (Clears any custom configuration)
+
+    .EXAMPLE
+    Set-VCDSDomain -InstanceName "CloudDirector-TestInstance-01" -InstanceFQDN "clouddirector.pigeonnuggets.com" -ConsoleProxyFQDN "clouddirector-console.pigeonnuggets.com" -CertificateKeyPEM (Get-Content C:\Certbot\live\pigeonnuggets.com\privkey.pem -Raw) -CertificatePEM (Get-Content C:\Certbot\live\pigeonnuggets.com\fullchain.pem -Raw)
+    Sets a custom domain of "clouddirector.pigeonnuggets.com" for the CDS instance with the name "CloudDirector-TestInstance-01" using the TLS Certificate in C:\Certbot\live\pigeonnuggets.com\fullchain.pem and the private key named privkey.pem and sets the console proxy address to "clouddirector-console.pigeonnuggets.com"
 
     .NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-06-23
-	VERSION: 1.0
+    LASTEDIT: 2020-07-07
+	VERSION: 1.1
     #>
     [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
     Param(
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
             [ValidateNotNullorEmpty()]  [string] $InstanceId,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
+        [Parameter(Mandatory=$True, ParameterSetName="Reset")]
             [ValidateNotNullorEmpty()]  [string] $InstanceName,
+        [Parameter(Mandatory=$True, ParameterSetName="Reset")]
+            [switch]$Reset,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $InstanceFQDN,
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $ConsoleProxyFQDN,
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $CertificateKeyPEM,
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
+        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $CertificatePEM,
-        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceId")]
-        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceName")]
+        [Parameter(Mandatory=$False)]
             [ValidateNotNullorEmpty()] [String] $EnvironmentId,
-            [switch]$Reset,
+        [Parameter(Mandatory=$False)]
             [switch]$Async
     )
     if(!$global:VCDService.IsConnected){
@@ -74,7 +89,7 @@ function Set-VCDSDomain(){
     # Setup a Service URI for the environment
     $ServiceURI = $Environment.ServiceURI
 
-    if($PSCmdlet.ParameterSetName -eq "ByInstanceName") {
+    if($PSCmdlet.ParameterSetName -in ("ByInstanceName","Reset")) {
         # Check if an instance already exists with the provided Name
         $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Name $InstanceName
         if($Instance.count -eq 0){
@@ -106,8 +121,8 @@ function Set-VCDSDomain(){
         [Hashtable] $htArguments = @{
             customDomainName = $InstanceFQDN
             consoleProxyCustomDomainName = $ConsoleProxyFQDN
-            privateKey =
-            certificates =
+            privateKey = $CertificateKeyPEM
+            certificates = $CertificatePEM
             revertToDefaultDomain = $null
         }
     }
@@ -130,7 +145,7 @@ function Set-VCDSDomain(){
         $SetInstanceDNS = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         if($PSBoundParameters.ContainsKey("Async")){
             if(!(Watch-VCDSTaskCompleted -Task $SetInstanceDNS -Timeout 1800)){
-                throw "An error occured executing the operation to adjust the DNS and Certificate for the instnace under task $($SetInstanceDNS) please check the console and try the operation again."
+                throw "An error occurred executing the operation to adjust the DNS and Certificate for the instnace under task $($SetInstanceDNS) please check the console and try the operation again."
             } else {
                 return (Get-VCDSTasks -Id $SetInstanceDNS.id)
             }
@@ -138,7 +153,6 @@ function Set-VCDSDomain(){
             return $SetInstanceDNS
         }
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
-
 }

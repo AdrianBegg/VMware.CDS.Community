@@ -81,6 +81,6 @@ function Get-VCDSEnvironments(){
             return $Results
         }
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
 }

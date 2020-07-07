@@ -1,10 +1,10 @@
 function Get-VCDSTemplates(){
     <#
     .SYNOPSIS
-    Returns the avaialble templates for the provided Cloud Director Service environment.
+    Returns the available templates for the provided Cloud Director Service environment.
 
     .DESCRIPTION
-    Returns the avaialble templates for the provided Cloud Director Service environment.
+    Returns the available templates for the provided Cloud Director Service environment.
 
     .PARAMETER EnvironmentId
     Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
@@ -83,6 +83,6 @@ function Get-VCDSTemplates(){
             return $Results
         }
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
 }

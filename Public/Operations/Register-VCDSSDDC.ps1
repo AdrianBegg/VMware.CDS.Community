@@ -25,8 +25,8 @@ function Register-VCDSSDDC(){
     The name of the VMC you would like to associate with Cloud Director Service.
 
     .EXAMPLE
-    Register-VCDSSDDC -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-02" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpNS7RF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
-    Registers the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-02 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
+    Register-VCDSSDDC -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
+    Registers the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
 
     .NOTES
     AUTHOR: Adrian Begg
@@ -105,6 +105,6 @@ function Register-VCDSSDDC(){
         $CreateInstanceResult = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         return $CreateInstanceResult
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
 }

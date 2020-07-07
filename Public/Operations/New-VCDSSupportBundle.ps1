@@ -6,6 +6,15 @@ function New-VCDSSupportBundle(){
     .DESCRIPTION
     Generate a new Cloud Director support bundle. This operation requires administrative permissions and may take a while.
 
+    .PARAMETER InstanceId
+    The Instance Id of the Cloud Director instance to generate the Support Bundle.
+
+    .PARAMETER InstanceName
+    The Instance Name of the Cloud Director instance to generate the Support Bundle.
+
+    .PARAMETER EnvironmentId
+    Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
+
     .PARAMETER Download
     If the parameter is set to $true after the support bundle has been generated it will be download to the current working directory
 
@@ -14,8 +23,8 @@ function New-VCDSSupportBundle(){
     Generates a new Cloud Director support bundle for the instance with the name "CDS-Instance-01" and returns the details of the support bundle object generated.
 
     .EXAMPLE
-    New-VCDSSupportBundle -Download
-    Generates a new Cloud Director support bundle and downloads the buddle files to the current working directory.
+    New-VCDSSupportBundle -InstanceId "urn:vcdc:vcdInstance:182297f8-36d0-4901-9f1d-42a2524fa091" -Download
+    Generates a new Cloud Director support bundle for the provided instance and downloads the buddle files to the current working directory.
 
     .NOTES
     AUTHOR: Adrian Begg
@@ -86,7 +95,7 @@ function New-VCDSSupportBundle(){
         # Create the support bundle and wait for the task to complete
         $CreateSupportBundleTask = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         if(!(Watch-VCDSTaskCompleted -Task $CreateSupportBundleTask -Timeout 1800)){
-            throw "An error occured creating the support bundle $($CreateSupportBundleTask) please check the console and try the operation again."
+            throw "An error occurred creating the support bundle $($CreateSupportBundleTask) please check the console and try the operation again."
         } else {
             # Get the support bundle task
             $SupportBundleTask = Get-VCDSTasks -Id $CreateSupportBundleTask.id -IncludeFiles
@@ -115,6 +124,6 @@ function New-VCDSSupportBundle(){
             return $SupportBundleTask
         }
     } catch {
-        throw "An exception has occured attempting to make the API call to create the support bundle. $_"
+        throw "An exception has occurred attempting to make the API call to create the support bundle. $_"
     }
 }

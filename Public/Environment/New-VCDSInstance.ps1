@@ -108,6 +108,6 @@ function New-VCDSInstance(){
         $CreateInstanceResult = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         return $CreateInstanceResult
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
 }

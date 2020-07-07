@@ -62,9 +62,9 @@ function Connect-VCDService(){
     $BearerToken = ($CSPTokenResult | ConvertFrom-Json).access_token
     $BearerTokenExpiry = ($CSPTokenResult | ConvertFrom-Json).expires_in
     $RefreshToken = ($CSPTokenResult | ConvertFrom-Json).refresh_token
-    $IdToken = ($CSPTokenResult | ConvertFrom-Json).id_token
     $TokenScope = ($CSPTokenResult | ConvertFrom-Json).scope
     $TokenType = ($CSPTokenResult | ConvertFrom-Json).token_type
+
 
     # Create a Connection object and populate with available environments
     $objVCDCConnection = New-Object System.Management.Automation.PSObject
@@ -73,7 +73,6 @@ function Connect-VCDService(){
     $objVCDCConnection | Add-Member Note* AccessTokenScope $TokenScope
     $objVCDCConnection | Add-Member Note* AccessTokenType $TokenType
     $objVCDCConnection | Add-Member Note* RefreshToken $RefreshToken
-    $objVCDCConnection | Add-Member Note* IdToken $IdToken
     $objVCDCConnection | Add-Member Note* IsConnected $true
 
     # Next make a call to the VCD Cloud Gateway to return a collection of Environment Types available

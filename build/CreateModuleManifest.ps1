@@ -14,14 +14,14 @@ $colPublicFunctions = ($colPublicFunctionFiles | Where-Object {$_.Extension -eq 
 
 $manifest = @{
     Path              = "$BasePath\VMware.CDS.Community.psd1"
-    ModuleVersion     = '1.0'
+    ModuleVersion     = '0.1'
     Author            = 'Adrian Begg'
     Copyright         = '2020 Adrian Begg. All rights reserved.'
-    Description       = 'A PowerShell module to interact with the VMware Cloud Director service using the VMware Console Services Portal (CSP).'
+    Description       = 'A PowerShell module to interact with the VMware Cloud Director service using the VMware Cloud Services Portal (CSP).'
     ProjectUri        = 'https://github.com/AdrianBegg/VMware.CDS.Community'
     LicenseUri        = 'https://raw.githubusercontent.com/AdrianBegg/VMware.CDS.Community/master/LICENSE'
     CompatiblePSEditions = "Desktop","Core"
-    PowerShellVersion = '6.2'
+    PowerShellVersion = '7.0'
     NestedModules = @($NestedModules.TrimStart(".\"))
     FunctionsToExport= @(($colPublicFunctions))
 }

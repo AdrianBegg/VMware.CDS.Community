@@ -10,14 +10,26 @@ function Get-VCDSInstances(){
     Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
 
     .PARAMETER Name
-    Optionally the Name of the Instance.
+    Optionally the Name of the Cloud Director Instance.
 
     .PARAMETER Id
-    Optionally the Id to Instance.
+    Optionally the Id of the Cloud Director Instance.
+
+    .EXAMPLE
+    Get-VCDSInstances
+    Returns a collection of VCDS Instances in the default environment.
 
     .EXAMPLE
     Get-VCDSInstances -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
     Returns a collection of VCDS Instances in the environment with the Environment with the Id urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac
+
+    .EXAMPLE
+    Get-VCDSInstances -Name "CloudDirector-TestInstance-01"
+    Returns the Cloud Director instance with the name "CloudDirector-TestInstance-01" in the default environment if it exists.
+
+    .EXAMPLE
+    Get-VCDSInstances -Id urn:vcdc:vcdInstance:182297f8-36d0-4901-9f1d-42a2524fa091
+    Returns the Cloud Director instance with the Id "urn:vcdc:vcdInstance:182297f8-36d0-4901-9f1d-42a2524fa091" in the default environment if it exists.
 
 	.NOTES
     AUTHOR: Adrian Begg
@@ -74,6 +86,6 @@ function Get-VCDSInstances(){
         }
         return $Results
     } catch {
-        throw "An exception has occured attempting to make the API call. $_"
+        throw "An exception has occurred attempting to make the API call. $_"
     }
 }

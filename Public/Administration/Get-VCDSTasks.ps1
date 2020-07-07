@@ -10,10 +10,13 @@ function Get-VCDSTasks(){
     Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
 
     .PARAMETER Id
-    The Cloud Director Service Task Id to filter the Tasks.
+    The Cloud Director service Task Id to filter the Tasks.
 
     .PARAMETER EntityId
-    The Cloud Director Service Entity Id to filter the Tasks.
+    The Cloud Director service Entity Id to filter the Tasks.
+
+    .PARAMETER TaskName
+    The Cloud Director service Task Name to filter the Tasks by.
 
     .PARAMETER EventStatus
     The status to filter the events.
@@ -32,17 +35,25 @@ function Get-VCDSTasks(){
     Get-VCDSTasks -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
     Returns the VCDS tasks for the Environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
 
+    .EXAMPLE
+    Get-VCDSTasks -EntityId urn:vcdc:vcdInstance:35cdd922-dae7-415f-bbef-d333ac5573d9 -EventStatus "Failed"
+    Returns all of the VCDS tasks for the Entity "urn:vcdc:vcdInstance:35cdd922-dae7-415f-bbef-d333ac5573d9" that have a status of failed.
+
+    .EXAMPLE
+    Get-VCDSTasks -TaskName "createSupportBundle"
+    Returns all of the VCDS tasks with the Task Name "createSupportBundle"
+
 	.NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-02-14
-	VERSION: 1.1
+    LASTEDIT: 2020-07-07
+	VERSION: 1.2
     #>
     Param(
         [Parameter(Mandatory=$False)]
             [ValidateNotNullorEmpty()] [String] $Id,
+            [ValidateNotNullorEmpty()] [String] $TaskName,
             [ValidateNotNullorEmpty()] [String] $EntityId,
-            [ValidateSet("SUCCESS","IN_PROGRESS","FAILURE")] [String] $EventStatus,
-            [ValidateNotNullorEmpty()] [String] $Organisation,
+            [ValidateSet("SUCCESS","IN_PROGRESS","FAILED")] [String] $EventStatus,
             [ValidateNotNullorEmpty()] [String] $UserId,
             [ValidateNotNullorEmpty()] [String]  $EnvironmentId,
             [switch] $IncludeFiles
@@ -50,7 +61,7 @@ function Get-VCDSTasks(){
     # TO DO : Implement filtering on the Task Properties
     # TO DO : Pending security fix from VMware (currently can see all tasks), adjust the URI to use the Organisation Id instead of just environment Id
     if(!$global:VCDService.IsConnected){
-        throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
+        throw "You are not currently connected to the VMware Cloud Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
     # Next check if the EnvironmentId has been provided and is valid
     if($PSBoundParameters.ContainsKey("EnvironmentId")){
@@ -138,5 +149,17 @@ function Get-VCDSTasks(){
         }
     }
     # Finally post call filters
+    if($PSBoundParameters.ContainsKey("EntityId")){
+        $colTasks = $colTasks | Where-Object{$_.entityId -eq $EntityId}
+    }
+    if($PSBoundParameters.ContainsKey("EventStatus")){
+        $colTasks = $colTasks | Where-Object{$_.status -eq $EventStatus}
+    }
+    if($PSBoundParameters.ContainsKey("UserId")){
+        $colTasks = $colTasks | Where-Object{$_.UserId -eq $UserId}
+    }
+    if($PSBoundParameters.ContainsKey("TaskName")){
+        $colTasks = $colTasks | Where-Object{$_.name -eq $TaskName}
+    }
     return $colTasks
 }

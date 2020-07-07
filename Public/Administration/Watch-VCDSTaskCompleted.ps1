@@ -17,13 +17,12 @@ function Watch-VCDSTaskCompleted(){
 
 	.EXAMPLE
 	Watch-VCDSTaskCompleted -Task $RemoveTask -Timeout 180
-
 	Monitors the task in the object $RemoveTask for a maximum of 60 seconds and returns True when the task completes
 
 	.NOTES
-	  NAME: Watch-VCDSTaskCompleted
-	  AUTHOR: Adrian Begg
-	  LASTEDIT: 2020-02-15
+	NAME: Watch-VCDSTaskCompleted
+	AUTHOR: Adrian Begg
+	LASTEDIT: 2020-02-15
 	#>
 	Param(
 		[Parameter(Mandatory=$True)]
@@ -61,7 +60,7 @@ function Watch-VCDSTaskCompleted(){
 		if($objTaskStatus.status -ne "IN_PROGRESS"){
             $boolTaskComplete = $true
             if($objTaskStatus.status -ne "SUCCESS"){
-                throw "An error occured executing Task Id $($Task.id). Errors: $($objTaskStatus.message)"
+                throw "An error occurred executing Task Id $($Task.id). Errors: $($objTaskStatus.message)"
                 Break
             }
 		}
@@ -71,7 +70,7 @@ function Watch-VCDSTaskCompleted(){
         Start-Sleep -Seconds 1
     } Until (($Timeout -eq 0) -or $boolTaskComplete)
 	if(($Timeout -eq 0) -and !$boolTaskComplete){
-		throw "A timeout occured waiting for the Task Id $($Task.id) to complete."
+		throw "A timeout occurred waiting for the Task Id $($Task.id) to complete."
 	}
 	$boolTaskComplete
 }
