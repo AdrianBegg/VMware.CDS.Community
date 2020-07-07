@@ -2,42 +2,44 @@ function Set-VCDSDomain(){
     <#
     .SYNOPSIS
     Short description
-    
+
     .DESCRIPTION
-    Please Note: The Instance FQDN and Console Proxy FQDN must be resolvable by public DNS before this cmdlet can be run. 
-    
+    Please Note: The Instance FQDN and Console Proxy FQDN must be resolvable by public DNS before this cmdlet can be run successfully.
+
     .PARAMETER InstanceId
-    Parameter description
-    
+    The Cloud Director Instance Id
+
     .PARAMETER InstanceName
-    Parameter description
-    
+    The Cloud Director Instance Name
+
     .PARAMETER InstanceFQDN
-    Parameter description
-    
+    The fully-qualified domain name for the Cloud Director instance (eg. clouddirector.pigeonnuggets.com)
+
     .PARAMETER ConsoleProxyFQDN
-    Parameter description
-    
+    The fully-qualified domain name for the Cloud Director Console Proxy endpoint (eg. clouddirector-console.pigeonnuggets.com)
+
     .PARAMETER CertificateKeyPEM
     The Private Key for the Certificate in PEM format
-    
+
     .PARAMETER CertificatePEM
-    The full certificate chain (Certificate, Intermediate and Root CA certificates) in PEM format.
-    
+    A string containing the full certificate chain (Certificate, Intermediate and Root CA certificates) in PEM format.
+
     .PARAMETER EnvironmentId
-    Parameter description
-    
+    Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
+
     .PARAMETER Reset
     Parameter description
-    
+
     .PARAMETER Async
     Parameter description
-    
+
     .EXAMPLE
     An example
-    
+
     .NOTES
-    General notes
+    AUTHOR: Adrian Begg
+    LASTEDIT: 2020-06-23
+	VERSION: 1.0
     #>
     [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
     Param(
@@ -100,13 +102,13 @@ function Set-VCDSDomain(){
             revertToDefaultDomain = $true
         }
     } else {
-        # Set the arguments 
+        # Set the arguments
         [Hashtable] $htArguments = @{
             customDomainName = $InstanceFQDN
             consoleProxyCustomDomainName = $ConsoleProxyFQDN
-            privateKey = 
-            certificates = 
-            revertToDefaultDomain = $null 
+            privateKey =
+            certificates =
+            revertToDefaultDomain = $null
         }
     }
     # Set the arguments to the Payload
@@ -129,7 +131,7 @@ function Set-VCDSDomain(){
         if($PSBoundParameters.ContainsKey("Async")){
             if(!(Watch-VCDSTaskCompleted -Task $SetInstanceDNS -Timeout 1800)){
                 throw "An error occured executing the operation to adjust the DNS and Certificate for the instnace under task $($SetInstanceDNS) please check the console and try the operation again."
-            } else {  
+            } else {
                 return (Get-VCDSTasks -Id $SetInstanceDNS.id)
             }
         } else {
@@ -138,5 +140,5 @@ function Set-VCDSDomain(){
     } catch {
         throw "An exception has occured attempting to make the API call. $_"
     }
-    
+
 }
