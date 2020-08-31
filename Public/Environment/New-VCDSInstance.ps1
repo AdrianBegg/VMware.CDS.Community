@@ -62,7 +62,7 @@ function New-VCDSInstance(){
         $Environment = $global:VCDService.DefaultEnvironment
     }
     # Setup a Service URI for the environment
-    $ServiceURI = $Environment.ServiceURI
+    $ServiceURI = $Environment.url
 
     # TemplateId valid ?
     $Template =  Get-VCDSTemplates -EnvironmentId $Environment.id -Id $TemplateId

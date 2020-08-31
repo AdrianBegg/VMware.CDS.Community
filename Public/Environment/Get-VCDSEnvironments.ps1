@@ -46,7 +46,7 @@ function Get-VCDSEnvironments(){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
     # Setup a Service URI...need to review this after some further testing
-    $ServiceURI = $VCDService.DefaultEnvironment.ServiceURI
+    $ServiceURI = $VCDService.DefaultEnvironment.url
     # Setup a HashTable for the API call to the Cloud Gateway
     $EnvironmentAPIEndpoint = "$ServiceURI/organizations/$($VCDService.OrganizationId)/environments"
 

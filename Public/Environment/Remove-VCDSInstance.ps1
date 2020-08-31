@@ -61,7 +61,7 @@ function Remove-VCDSInstance(){
         $Environment = $global:VCDService.DefaultEnvironment
     }
     # Setup a Service URI for the environment
-    $ServiceURI = $Environment.ServiceURI
+    $ServiceURI = $Environment.url
 
     if($PSCmdlet.ParameterSetName -eq "ByName") {
         # Check if an instance already exists with the provided Name
