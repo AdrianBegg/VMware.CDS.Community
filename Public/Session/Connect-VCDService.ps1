@@ -89,6 +89,7 @@ function Connect-VCDService(){
     if($VCDCSPGatewayEnv.Count -eq 0){
             throw "The account does not have access to any Cloud Director environments. Please check the permissions and try again."
     }
+
     # Retrieve infomration about the currently logged in user
     $VCDCSPEnvRequestParameters.URI = "https://console.cloud.vmware.com/csp/gateway/am/api/loggedin/user"
     $LoggedInUser = (Invoke-WebRequest @VCDCSPEnvRequestParameters).Content | ConvertFrom-Json
@@ -97,6 +98,7 @@ function Connect-VCDService(){
 
     # Next query each VCD Cloud Gateway environment for the VCDS Environments and build a collection
     $VCDSEnvironments = New-Object -TypeName "System.Collections.ArrayList"
+
     foreach($VCDSEnv in $VCDCSPGatewayEnv){
         # Next retieve the information about the current logged in user and the Organisation that the token belongs to
         $OrganisationURI = "$($VCDSEnv.starfleetConfig.operatorURL)/organization"
@@ -112,11 +114,11 @@ function Connect-VCDService(){
             UseBasicParsing = $true
         }
 
-        # TO DO: Need to fix this segment up (multiple Orgs or not ???)
+        # Get and Organisation Id and store it with the connection information
         $OrganisationURI = (Invoke-WebRequest @VCDOrgRequestParameters).Content | ConvertFrom-Json
         $objVCDCConnection | Add-Member Note* OrganizationId $OrganisationURI.id
 
-        # Setup a Service URI for the API Call
+        # Setup a Service URI for the API Call to get the available environments for this environment and Organisation
         $VCDSEnvAPIEndpoint = "$($VCDSEnv.starfleetConfig.operatorURL)/organizations/$($OrganisationURI.id)/environments"
         # A Hashtable of Request Parameters
         [Hashtable] $VCDSEnvRequestParameters = @{
@@ -134,10 +136,14 @@ function Connect-VCDService(){
         if($AccessibleEnvironments.Count -eq 0){
             Write-Warning "The account does not have access to any Cloud Director environments under the environment $($Environment.type) $($Environment.starfleetConfig.operatorURL)."
         }
-        # Add some metadata to the Environments (messy structure) to make them easier to work with
-        $AccessibleEnvironments | Add-Member Note* type $VCDSEnv.type
-        $AccessibleEnvironments | Add-Member Note* ServiceURI $VCDSEnv.starfleetConfig.operatorUrl
-        $VCDSEnvironments.Add($AccessibleEnvironments) | Out-Null
+        # There can be multiple environments (e.g. Inital Availability, Frankurt, Tokyo) under the same VCDS environment type (e.g. Production)
+        # Need to loop through the returned results and add meta-data for working with them
+        foreach($WorkingEnvironment in $AccessibleEnvironments){
+            $WorkingEnvironment.url = $VCDSEnv.starfleetConfig.operatorUrl
+            $WorkingEnvironment | Add-Member Note* type $VCDSEnv.type
+            # Add the environment to the collection of available environments
+            $VCDSEnvironments.Add($WorkingEnvironment) | Out-Null
+        }
     }
     # Add the Available environments to the connection object
     $objVCDCConnection | Add-Member Note* VCDSEnvironments $VCDSEnvironments
@@ -151,6 +157,7 @@ function Connect-VCDService(){
             $objVCDCConnection | Add-Member Note* DefaultEnvironment $DefaultEnvironment
         }
     } else {
+        Write-Warning "Multiple Cloud Director service environments are available however no default was specified, environment with the Id $($VCDSEnvironments[0].id) will be set as the default."
         $objVCDCConnection | Add-Member Note* DefaultEnvironment $VCDSEnvironments[0]
     }
 

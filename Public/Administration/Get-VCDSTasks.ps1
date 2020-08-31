@@ -73,7 +73,7 @@ function Get-VCDSTasks(){
         $Environment = $global:VCDService.DefaultEnvironment
     }
     # Setup a Service URI for the environment
-    $ServiceURI = $Environment.ServiceURI
+    $ServiceURI = $Environment.url
 
     # A collection of filters
     [Hashtable] $htFilters = @{

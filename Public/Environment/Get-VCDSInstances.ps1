@@ -58,7 +58,7 @@ function Get-VCDSInstances(){
         $Environment = $global:VCDService.DefaultEnvironment
     }
     # Setup a Service URI for the environment
-    $ServiceURI = $Environment.ServiceURI
+    $ServiceURI = $Environment.url
 
     # Setup a HashTable for the API call to the Cloud Gateway
     $InstancesAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/organization/$($VCDService.OrganizationId)/instances"
