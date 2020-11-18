@@ -1,44 +1,30 @@
-function Register-VCDSSDDC(){
+function Set-VCDSIdPSettings(){
     <#
     .SYNOPSIS
-    Associate an VMC SDDC with a VMware Cloud Director service instance.
+    Configure CSP (VMware Cloud Services) as Identity Provider for instance's System Org.
 
     .DESCRIPTION
-    Associate an VMC SDDC with a VMware Cloud Director service instance.
+    Configure CSP (VMware Cloud Services) as Identity Provider for instance's System Org. Once this has been set users with the VMware Cloud Director Administrator Service role will be able to login to the Cloud Director instance using there myVMware identity.
 
-    .PARAMETER EnvironmentId
-    Optionally the Cloud Director Service Environment Id (the default is used if none is provided)
+    PLEASE NOTE: The API Token used in the Connect-VCDService must have "Organization Owner" role in hosting CSP Organisation in additon to the "Cloud Director Administrator" service role.
 
     .PARAMETER InstanceId
-    The VMware Cloud Director service instance id
+    The Cloud Director Instance Id
 
     .PARAMETER InstanceName
-    The VMware Cloud Director service instance name
+    The Cloud Director Instance Name
 
-    .PARAMETER VMCOrganisationUUID
-    The long name (UUID format) for the CSP organization containing your VMCs.
-
-    .PARAMETER VMCAPIToken
-    An API token with appropriate permissions from the CSP organization containing your VMC.
-
-    .PARAMETER SDDCName
-    The name of the VMC you would like to associate with Cloud Director Service.
-
-    .PARAMETER UseVMCProxy
-    If provided will Associate a VMC SDDC via Proxy
+    .PARAMETER EnvironmentId
+    Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
 
     .EXAMPLE
-    Register-VCDSSDDC -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
-    Registers the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
-
-    .EXAMPLE
-    Register-VCDSSDDC -UseVMCProxy -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
-    Uses the VMC Proxy to register the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
+    Set-VCDSIdPSettings -InstanceName "PSTest-01"
+    Enables or reconfigures CSP (VMware Cloud Services) as Identity Provider for instance's System Org of Cloud Director instance named PSTest-01 in the default environment.
 
     .NOTES
     AUTHOR: Adrian Begg
     LASTEDIT: 2020-11-17
-	VERSION: 2.0
+	VERSION: 1.0
     #>
     [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
     Param(
@@ -46,16 +32,9 @@ function Register-VCDSSDDC(){
             [ValidateNotNullorEmpty()]  [string] $InstanceId,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $InstanceName,
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
-            [ValidateNotNullorEmpty()]  [string] $VMCOrganisationUUID,
-            [ValidateNotNullorEmpty()]  [string] $VMCAPIToken,
-            [ValidateNotNullorEmpty()]  [string] $SDDCName,
         [Parameter(Mandatory=$False, ParameterSetName="ByInstanceId")]
         [Parameter(Mandatory=$False, ParameterSetName="ByInstanceName")]
-            [ValidateNotNullorEmpty()] [String] $EnvironmentId,
-        [Parameter(Mandatory=$False)]
-            [switch]$UseVMCProxy
+            [ValidateNotNullorEmpty()] [String] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
@@ -90,17 +69,8 @@ function Register-VCDSSDDC(){
     # Setup a HashTable for the API call to the Cloud Gateway
     $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
-        operationType = "associateVmc"
-        arguments = @{
-            apiToken = $VMCAPIToken
-            vmcCspOrgId = $VMCOrganisationUUID
-            vmcName = $SDDCName
-        }
-    }
-    # Check if the "-UseVMCProxy" switch has been provided
-    if($UseVMCProxy){
-        Write-Warning "The -UseVMCProxy option is not currently implemented in Cloud Director service. This switch currently has no effect."
-        #$htPayload.operationType = "associateVmcViaProxy"
+        operationType = "setupCspAsIdp"
+        arguments = @{}
     }
 
     # A Hashtable of Request Parameters
@@ -116,8 +86,8 @@ function Register-VCDSSDDC(){
         UseBasicParsing = $true
     }
     try{
-        $CreateInstanceResult = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
-        return $CreateInstanceResult
+        $SetIdPTask = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
+        return $SetIdPTask
     } catch {
         throw "An exception has occurred attempting to make the API call. $_"
     }

@@ -105,7 +105,7 @@ function Set-VCDSDomain(){
     }
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invoke"
+    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
         operationType = "associateCustomDomain"
         arguments = @{}
