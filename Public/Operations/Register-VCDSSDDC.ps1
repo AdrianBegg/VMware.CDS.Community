@@ -90,7 +90,7 @@ function Register-VCDSSDDC(){
     # Setup a HashTable for the API call to the Cloud Gateway
     $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
-        operationType = "associateVmc"
+        operationType = "REGISTER_VMC"
         arguments = @{
             apiToken = $VMCAPIToken
             vmcCspOrgId = $VMCOrganisationUUID
