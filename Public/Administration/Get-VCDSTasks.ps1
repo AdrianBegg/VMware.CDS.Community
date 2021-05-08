@@ -25,11 +25,11 @@ function Get-VCDSTasks(){
     The UserId to filter the events.
 
     .PARAMETER IncludeFiles
-    If true returns the details of any files assosicated with the Task (e.g. Support Bundles)
+    If true returns the details of any files associated with the Task (e.g. Support Bundles)
 
     .EXAMPLE
     Get-VCDSTasks
-    Returtns the VCDS tasks for default environment.
+    Returns the VCDS tasks for default environment.
 
     .EXAMPLE
     Get-VCDSTasks -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
@@ -59,7 +59,7 @@ function Get-VCDSTasks(){
             [switch] $IncludeFiles
     )
     # TO DO : Implement filtering on the Task Properties
-    # TO DO : Pending security fix from VMware (currently can see all tasks), adjust the URI to use the Organisation Id instead of just environment Id
+    # TO DO : Pending security fix from VMware (currently can see all tasks), adjust the URI to use the Organization Id instead of just environment Id
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Cloud Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
     }
@@ -103,7 +103,7 @@ function Get-VCDSTasks(){
         UseBasicParsing = $true
         Body = $htFilters
     }
-    # Now make an inital call to the API
+    # Now make an initial call to the API
     $Response =  ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
     # Check if single result or multiple results
     if($PSBoundParameters.ContainsKey("Id")){
@@ -139,7 +139,7 @@ function Get-VCDSTasks(){
                 }
                 UseBasicParsing = $true
             }
-            # Now make an inital call to the API
+            # Now make an initial call to the API
             $FilesResponse =  ((Invoke-WebRequest @FileRequestParameters).Content | ConvertFrom-Json)
             # Check if anything was returned
             if($FilesResponse.Count -gt 0){
