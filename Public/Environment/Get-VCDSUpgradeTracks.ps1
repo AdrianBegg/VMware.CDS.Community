@@ -16,7 +16,7 @@ function Get-VCDSUpgradeTracks(){
     Optionally the Station Name to filter.
 
     .PARAMETER DefaultStation
-    If set returns the deafult station for the provided environment
+    If set returns the default station for the provided environment
 
     .EXAMPLE
     Get-VCDSUpgradeTracks
@@ -32,8 +32,8 @@ function Get-VCDSUpgradeTracks(){
 
 	.NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-11-17
-	VERSION: 1.0
+    LASTEDIT: 2021-05-07
+	VERSION: 1.1
     #>
     [CmdletBinding(DefaultParameterSetName="Default")]
     Param(
@@ -76,7 +76,7 @@ function Get-VCDSUpgradeTracks(){
         UseBasicParsing = $true
     }
     try{
-        # First return the environments collection from CSP
+        # Make a call to return all the Upgrade Stations/Tracks
         $colUpgradeTracks = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
         if($DefaultStation){
             return $colUpgradeTracks.defaultStation
@@ -85,11 +85,7 @@ function Get-VCDSUpgradeTracks(){
                 return $colUpgradeTracks.tracks | Where-Object {$_.name -eq $TrackName}
             }
             elseif($PSBoundParameters.ContainsKey("StationName")){
-                foreach($Station in $colUpgradeTracks.tracks.stations){
-                    if($Station -eq $StationName){
-                        return $StationName
-                    }
-                }
+                return $colUpgradeTracks.tracks.stations | Where-Object {$_.name -eq $StationName}
             } else {
                 return $colUpgradeTracks.tracks
             }

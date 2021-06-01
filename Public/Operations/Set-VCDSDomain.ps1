@@ -104,18 +104,16 @@ function Set-VCDSDomain(){
         }
     }
 
-    # Setup a HashTable for the API call to the Cloud Gateway
+    # Setup a HashTable for the API call to the Cloud Gateway and the default operation type (Set Custom Domain)
     $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
-        operationType = "associateCustomDomain"
+        operationType = "PLAIN_CUSTOM_DOMAIN"
         arguments = @{}
     }
 
     # Set the arguments to reset the DNS and certificate settings to default
     if($PSBoundParameters.ContainsKey("Reset")){
-        [Hashtable] $htArguments = @{
-            revertToDefaultDomain = $true
-        }
+        $htPayload.operationType = "REVERT_CUSTOM_DOMAIN"
     } else {
         # Set the arguments
         [Hashtable] $htArguments = @{
@@ -123,11 +121,10 @@ function Set-VCDSDomain(){
             consoleProxyCustomDomainName = $ConsoleProxyFQDN
             privateKey = $CertificateKeyPEM
             certificates = $CertificatePEM
-            revertToDefaultDomain = $null
         }
+        # Set the arguments to the Payload
+        $htPayload.arguments = $htArguments
     }
-    # Set the arguments to the Payload
-    $htPayload.arguments = $htArguments
 
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{

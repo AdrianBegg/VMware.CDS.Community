@@ -1,10 +1,12 @@
-function Set-VCDSProviderAdminPassword(){
+function Get-VCDSInstanceMaintenance(){
     <#
     .SYNOPSIS
-    Reset the Provider Administrator account password for a Cloud Director service instance.
+    Returns the Maintenance window for the provided Cloud Director Service instance.
 
     .DESCRIPTION
-    Reset the Provider Administrator account password for a Cloud Director service instance.
+    Returns the weekly 2-hour maintenance window configured during which VMware checks if the VMware Cloud Director instance is eligible for upgrade and upgrade it if it is the case.
+    
+    The maintenance window Start Time/Day is set in UTC.
 
     .PARAMETER InstanceId
     The Cloud Director Instance Id
@@ -12,19 +14,16 @@ function Set-VCDSProviderAdminPassword(){
     .PARAMETER InstanceName
     The Cloud Director Instance Name
 
-    .PARAMETER NewProviderAdminPassword
-    The Password to set as the Provider Administrator account password for the provided Cloud Director instance
-
     .PARAMETER EnvironmentId
     Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
 
     .EXAMPLE
-    Set-VCDSProviderAdminPassword -InstanceName "CloudDirector-TestInstance-01" -NewProviderAdminPassword "SuperSt0rngP@ssword!"
-    Resets the administrator user password for the instance named "CloudDirector-TestInstance-01" in the CDS default environment to "SuperSt0rngP@ssword!"
+    Get-VCDSInstanceMaintenance -InstanceName "CloudDirector-TestInstance-01"
+    Returns the currently configured Maintenance Window for the instance named "CloudDirector-TestInstance-01"
 
     .NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-08-31
+    LASTEDIT: 2021-05-08
 	VERSION: 1.0
     #>
     [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
@@ -33,10 +32,8 @@ function Set-VCDSProviderAdminPassword(){
             [ValidateNotNullorEmpty()]  [string] $InstanceId,
         [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()]  [string] $InstanceName,
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceId")]
-        [Parameter(Mandatory=$True, ParameterSetName="ByInstanceName")]
-            [ValidateNotNullorEmpty()]  [string] $NewProviderAdminPassword,
-        [Parameter(Mandatory=$False)]
+        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceId")]
+        [Parameter(Mandatory=$False, ParameterSetName="ByInstanceName")]
             [ValidateNotNullorEmpty()] [String] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
@@ -54,7 +51,7 @@ function Set-VCDSProviderAdminPassword(){
     # Setup a Service URI for the environment
     $ServiceURI = $Environment.url
 
-    if($PSCmdlet.ParameterSetName -eq "ByInstanceName"){
+    if($PSCmdlet.ParameterSetName -eq "ByInstanceName") {
         # Check if an instance already exists with the provided Name
         $Instance = Get-VCDSInstances -EnvironmentId $Environment.id -Name $InstanceName
         if($Instance.count -eq 0){
@@ -70,36 +67,33 @@ function Set-VCDSProviderAdminPassword(){
     }
 
     # Setup a HashTable for the API call to the Cloud Gateway
-    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
-    [Hashtable] $htPayload = @{
-        operationType = "RESET_PROVIDER_ADMIN_PASSWORD"
-        arguments = @{}
-    }
+    $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/CONFIGURE_MAINTENANCE"
 
-    # Set the arguments to reset the password
-    [Hashtable] $htArguments = @{
-        providerAdminNewPassword = $NewProviderAdminPassword
-        providerAdminNewPasswordConfirm = $NewProviderAdminPassword
-    }
-    # Set the arguments to the Payload
-    $htPayload.arguments = $htArguments
-
-    # A Hashtable of Request Parameters
+    # A Hashtable of Request Parameters to the API
     [Hashtable] $RequestParameters = @{
         URI = $InstanceOperationAPIEndpoint
-        Method = "Post"
+        Method = "Get"
         ContentType = "application/json"
         Headers = @{
             "Authorization" = "Bearer $($global:VCDService.AccessToken)"
             "Accept" = "application/json"
         }
-        Body = (ConvertTo-Json $htPayload)
         UseBasicParsing = $true
     }
     try{
-        $SetInstancePassword = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
-        return $SetInstancePassword
+        $MaintenanceResult = ((Invoke-WebRequest @RequestParameters).Content | ConvertFrom-Json)
     } catch {
         throw "An exception has occurred attempting to make the API call. $_"
     }
+    # Parse the result and create an object with the current maintenance schedule
+    $MaintenanceDay = ($MaintenanceResult.arguments | Where-Object {$_.id -eq "maintenanceDay"}).defaultValue
+    $MaintenanceHour = ($MaintenanceResult.arguments | Where-Object {$_.id -eq "maintenanceHour"}).defaultValue
+    
+    # Define the Object to Post as Data to the API
+    [PSObject] $MaintenanceWindow = New-Object -TypeName PSObject -Property @{
+        MaintenanceDay = (($MaintenanceResult.arguments | Where-Object {$_.id -eq "maintenanceDay"}).options).$MaintenanceDay
+        MaintenanceHoursUTC = (($MaintenanceResult.arguments | Where-Object {$_.id -eq "maintenanceHour"}).options).$MaintenanceHour
+        MaintenanceHourStartUTC = $MaintenanceHour
+    }
+    return $MaintenanceWindow
 }

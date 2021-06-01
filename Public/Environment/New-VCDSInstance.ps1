@@ -15,7 +15,7 @@ function New-VCDSInstance(){
     Optionally The Cloud Director Service Environment Id (Default is used if none is provided)
 
     .PARAMETER UpgradeCategory
-    The Cloud Director Upgrade "Station" for the deployed instance. Use the Get-VCDSUpgradeTracks cmdlet to view valid Stations.
+    The Cloud Director Upgrade "Station" for the deployed instance. Use the Get-VCDSUpgradeTracks cmdlet to view valid Stations. The Station name should be used (not the localizedName)
     If none is provided the default will be used for the environment.
 
     .PARAMETER AdministratorPassword
@@ -23,15 +23,15 @@ function New-VCDSInstance(){
 
     .EXAMPLE
     New-VCDSInstance -Name "CDS-Instanace-01" -AdministratorPassword "Welcome@123"
-    Creates a new VCDS Instance named "CDS-Instance-01" in the default environment with the default upgrade catagory.
+    Creates a new VCDS Instance named "CDS-Instance-01" in the default environment with the default upgrade category.
 
     .EXAMPLE
     New-VCDSInstance -Name "CDS-Instanace-01" -UpgradeCategory "sp-main:alpha" -AdministratorPassword "Welcome@123"
-    Creates a new VCDS Instance in the default environment using Upgrade Catagory "sp-main:alpha"
+    Creates a new VCDS Instance in the default environment using Upgrade Category "sp-main:alpha"
 
     .EXAMPLE
     New-VCDSInstance -Name "CDS-Instanace-01" -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -UpgradeCategory "sp-release:production" -AdministratorPassword "Welcome@123"
-    Creates a new VCDS Instance in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" using UpgradeCatagory "sp-release:production"
+    Creates a new VCDS Instance in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" using UpgradeCategory "sp-release:production"
 
 	.NOTES
     AUTHOR: Adrian Begg
@@ -64,10 +64,10 @@ function New-VCDSInstance(){
     # Setup a Service URI for the environment
     $ServiceURI = $Environment.url
 
-    # Check if the UpgradeCategory was provided, if yes check if its valid, if no then retireve the default for the environment
+    # Check if the UpgradeCategory was provided, if yes check if its valid, if no then retrieve the default for the environment
     if($PSBoundParameters.ContainsKey("UpgradeCategory")){
         # Check if the provided Station is valid for the provided environment
-        $UpgradeCategory = Get-VCDSUpgradeTracks -EnvironmentId $Environment.id -StationName $UpgradeCategory
+        $UpgradeCategory = (Get-VCDSUpgradeTracks -EnvironmentId $Environment.id -StationName $UpgradeCategory).name
         if($UpgradeCategory.Count -eq 0){
             throw "The provided Station Name $UpgradeCategory is not compatible with the provided environment VCDS Environment with the Id $EnvironmentId. Please check the Station Name is correct and try again."
         }

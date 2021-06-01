@@ -6,7 +6,7 @@ function Set-VCDSIdPSettings(){
     .DESCRIPTION
     Configure CSP (VMware Cloud Services) as Identity Provider for instance's System Org. Once this has been set users with the VMware Cloud Director Administrator Service role will be able to login to the Cloud Director instance using there myVMware identity.
 
-    PLEASE NOTE: The API Token used in the Connect-VCDService must have "Organization Owner" role in hosting CSP Organisation in additon to the "Cloud Director Administrator" service role.
+    PLEASE NOTE: The API Token used in the Connect-VCDService must have "Organization Owner" role in hosting CSP Organization in addition to the "Cloud Director Administrator" service role.
 
     .PARAMETER InstanceId
     The Cloud Director Instance Id
@@ -69,7 +69,7 @@ function Set-VCDSIdPSettings(){
     # Setup a HashTable for the API call to the Cloud Gateway
     $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
-        operationType = "setupCspAsIdp"
+        operationType = "SETUP_CSP_AS_IDP_FOR_SYSTEM_ORG"
         arguments = @{}
     }
 

@@ -24,7 +24,7 @@ function New-VCDSSupportBundle(){
 
     .EXAMPLE
     New-VCDSSupportBundle -InstanceId "urn:vcdc:vcdInstance:182297f8-36d0-4901-9f1d-42a2524fa091" -Download
-    Generates a new Cloud Director support bundle for the provided instance and downloads the buddle files to the current working directory.
+    Generates a new Cloud Director support bundle for the provided instance and downloads the bundle files to the current working directory.
 
     .NOTES
     AUTHOR: Adrian Begg
@@ -75,7 +75,7 @@ function New-VCDSSupportBundle(){
     # Setup a HashTable for the API call to the Cloud Gateway
     $InstanceOperationAPIEndpoint = "$ServiceURI/environment/$($Environment.id)/instances/$($Instance.id)/operations/invokeOperation"
     [Hashtable] $htPayload = @{
-        operationType = "createSupportBundle"
+        operationType = "CREATE_SUPPORT_BUNDLE"
         arguments = @{}
     }
 

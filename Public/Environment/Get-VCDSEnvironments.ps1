@@ -12,7 +12,7 @@ function Get-VCDSEnvironments(){
     .PARAMETER Id
     The Environment unique identifier to filter results by
 
-    .PARAMETER Loaction
+    .PARAMETER Location
     Optionally the Amazon Region to filter results by (e.g. us-west2)
 
     .EXAMPLE

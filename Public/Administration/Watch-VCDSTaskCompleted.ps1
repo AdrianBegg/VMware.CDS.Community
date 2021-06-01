@@ -52,7 +52,7 @@ function Watch-VCDSTaskCompleted(){
             [double] $Percentage = 0
         }
 		Write-Debug $objTaskStatus
-		# Check if the Percentage is greater then 100 (this can happen) and normalise it
+		# Check if the Percentage is greater then 100 (this can happen) and normalize it
 		if($Percentage -gt 100){
 			$Percentage = 100
 		}
