@@ -8,7 +8,7 @@ Adrian Begg (@AdrianBegg)
 
 ## Tested Versions
 * PowerShell Core: 7.1
-* VMware Cloud Director service ([17 November 2020 Release](https://docs.vmware.com/en/VMware-Cloud-Director-service/services/rn/VMware-Cloud-Director-Service-Release-Notes.html))
+* VMware Cloud Director service ([13 April 2021 Release](https://docs.vmware.com/en/VMware-Cloud-Director-service/services/rn/VMware-Cloud-Director-Service-Release-Notes.html))
 
 ## Functional Coverage
 The following cmdlets are available in the current release.
@@ -39,6 +39,9 @@ The following cmdlets are available in the current release.
 All of the cmdlets in the module should have well described PowerShell help available. For detailed help including examples please use `Get-help <cmdlet> -Detailed` (e.g. `Get-help New-VCDSInstance -Detailed`).
 
 ### Change Log
+**0.5 (13th July 2021)
+* Adjusted **Register-VCDSSDDC** cmdlet added support for -ProxyVMNetwork switch to control SDDC Proxy network placement
+
 **v0.4 (7th July 2021)**
 * Adjusted **Get-VCDSUpgradeTracks** cmdlet -StationName parameter handling to support changes in the upgrade-tracks-and-stations API operation
 * Adjusted **New-VCDSInstance** cmdlet to support changes in the Get-VCDSUpgradeTracks -StationName parameter
