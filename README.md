@@ -39,7 +39,7 @@ The following cmdlets are available in the current release.
 All of the cmdlets in the module should have well described PowerShell help available. For detailed help including examples please use `Get-help <cmdlet> -Detailed` (e.g. `Get-help New-VCDSInstance -Detailed`).
 
 ### Change Log
-**0.5 (13th July 2021)
+**0.5 (13th July 2021)**
 * Adjusted **Register-VCDSSDDC** cmdlet added support for -ProxyVMNetwork switch to control SDDC Proxy network placement
 
 **v0.4 (7th July 2021)**
