@@ -14,7 +14,7 @@ $colPublicFunctions = ($colPublicFunctionFiles | Where-Object {$_.Extension -eq 
 
 $manifest = @{
     Path              = "$BasePath\VMware.CDS.Community.psd1"
-    ModuleVersion     = '0.4'
+    ModuleVersion     = '0.5'
     Author            = 'Adrian Begg'
     Copyright         = '2021 Adrian Begg. All rights reserved.'
     Description       = 'A PowerShell module to interact with the VMware Cloud Director service using the VMware Cloud Services Portal (CSP).'

@@ -24,21 +24,17 @@ function Register-VCDSSDDC(){
     .PARAMETER SDDCName
     The name of the VMC you would like to associate with Cloud Director Service.
 
-    .PARAMETER UseVMCProxy
-    If provided will Associate a VMC SDDC via Proxy
+    .PARAMETER ProxyVMNetwork
+    The name of the Routed network where your proxy VM for CDI access should be deployed
 
     .EXAMPLE
-    Register-VCDSSDDC -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
-    Registers the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
-
-    .EXAMPLE
-    Register-VCDSSDDC -UseVMCProxy -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA"
-    Uses the VMC Proxy to register the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac"
+    Register-VCDSSDDC -EnvironmentId "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" -InstanceName "CDS-Instance-01" -VMCOrganisationUUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" -SDDCName "CDS-Dev-SDDC-01" -VMCAPIToken "ATduasdE1kBpsajdasdRF0HgFtA22jKazpmu4KXdIES1J2esGuwWKYmDpT4OIpNA" -ProxyVMNetwork "Cloud-Director-Proxy"
+    Registers the VMC SDDC named "CDS-Dev-SDDC-01" in Org with UUID "398712a64b-5462-21e4-b4e1-29b0452ac82d" to the CDS instance named CDS-Instance-01 in the environment with the Id "urn:vcdc:environment:3fccbd2a-003c-4303-8f1a-8569853236ac" and deploys the proxy on the network segment "Cloud-Director-Proxy"
 
     .NOTES
     AUTHOR: Adrian Begg
-    LASTEDIT: 2020-11-17
-	VERSION: 2.0
+    LASTEDIT: 2021-07-13
+	VERSION: 2.1
     #>
     [CmdletBinding(DefaultParameterSetName="ByInstanceId")]
     Param(
@@ -51,11 +47,10 @@ function Register-VCDSSDDC(){
             [ValidateNotNullorEmpty()]  [string] $VMCOrganisationUUID,
             [ValidateNotNullorEmpty()]  [string] $VMCAPIToken,
             [ValidateNotNullorEmpty()]  [string] $SDDCName,
+            [ValidateNotNullorEmpty()]  [string] $ProxyVmNetwork,
         [Parameter(Mandatory=$False, ParameterSetName="ByInstanceId")]
         [Parameter(Mandatory=$False, ParameterSetName="ByInstanceName")]
-            [ValidateNotNullorEmpty()] [String] $EnvironmentId,
-        [Parameter(Mandatory=$False)]
-            [switch]$UseVMCProxy
+            [ValidateNotNullorEmpty()] [String] $EnvironmentId
     )
     if(!$global:VCDService.IsConnected){
         throw "You are not currently connected to the VMware Console Services Portal (CSP) for VMware Cloud Director Service. Please use Connect-VCDService cmdlet to connect to the service and try again."
@@ -95,14 +90,9 @@ function Register-VCDSSDDC(){
             apiToken = $VMCAPIToken
             vmcCspOrgId = $VMCOrganisationUUID
             vmcName = $SDDCName
+            proxyVmNetwork = $ProxyVmNetwork
         }
     }
-    # Check if the "-UseVMCProxy" switch has been provided
-    if($UseVMCProxy){
-        Write-Warning "The -UseVMCProxy option is not currently implemented in Cloud Director service. This switch currently has no effect."
-        #$htPayload.operationType = "associateVmcViaProxy"
-    }
-
     # A Hashtable of Request Parameters
     [Hashtable] $RequestParameters = @{
         URI = $InstanceOperationAPIEndpoint
